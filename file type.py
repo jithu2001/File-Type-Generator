@@ -1,6 +1,7 @@
 import os
 import shutil
 import magic
+import threading
 
 source_directory = "D:/File type generator/file"
 destination_directory = "D:/File type generator/Recieved"
@@ -10,15 +11,15 @@ for file_type in ['PNG', 'MP3', 'JPEG', 'PDF']:
     os.makedirs(directory, exist_ok=True) # Create the destination directories 
 
 def classify_and_move_files():
-    for filename in os.listdir(source_directory):
-        file_path = os.path.join(source_directory, filename)
+    while True:
+        for filename in os.listdir(source_directory):
+            file_path = os.path.join(source_directory, filename)
+            if os.path.isfile(file_path):
+                file_type, file_extension = get_file_type(file_path)
+                if file_type:
+                    destination_path = os.path.join(destination_directory, file_type, filename + file_extension)
+                    shutil.move(file_path, destination_path)
 
-        if os.path.isfile(file_path):
-            file_type, file_extension = get_file_type(file_path)
-
-            if file_type:
-                destination_path = os.path.join(destination_directory, file_type, filename + file_extension)
-                shutil.move(file_path, destination_path)
 
 def get_file_type(file_path):
     mime = magic.Magic(mime=True)
@@ -36,4 +37,6 @@ def get_file_type(file_path):
         return None
 
 if __name__ == "__main__":
-    classify_and_move_files()
+    T1=threading.Thread(target=classify_and_move_files)
+    T1.start()
+    T1.join()
